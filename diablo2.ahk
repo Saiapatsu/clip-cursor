@@ -8,18 +8,18 @@
 GroupAdd diablo, ahk_exe Game.exe
 GroupAdd diablo, ahk_exe D2SE.exe
 GroupAdd diablo, Diablo II
-GroupAdd diablo, ahk_exe notepad++.exe
+; GroupAdd diablo, ahk_exe notepad++.exe
 ; add something that matches D2R here #######################################
 ; "ahk_exe Game.exe" will match any program named Game.exe
 ; "Diablo II" will match any window whose title is Diablo II
 
 ; die if this script isn't in admin mode
 ; (if D2R doesn't require admin, this part can be removed safely ######################)
-if !A_IsAdmin
-{
-	MsgBox, This script should be run in administrator mode
-	ExitApp
-}
+; if !A_IsAdmin
+; {
+	; MsgBox, This script should be run in administrator mode
+	; ExitApp
+; }
 
 ; ---------------------------------------------------
 
@@ -31,7 +31,7 @@ SetTitleMatchMode 2
 Loop
 {
 	WinWaitActive ahk_group diablo
-	ToolTip Active
+	; ToolTip Active
 	
 	; there's no function or coordmode in 1.1 that will give us the client coordinates of the game,
 	; so let's do it ourselves
@@ -46,7 +46,7 @@ Loop
 	ClipCursor(1, x, y, x+w, y+h)
 	
 	WinWaitNotActive ahk_group diablo
-	ToolTip Inactive
+	; ToolTip Inactive
 	ClipCursor(0, 0, 0, 0, 0)
 }
 
