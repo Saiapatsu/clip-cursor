@@ -1,79 +1,54 @@
-;Diablo 2 AHK script
+;Diablo 2 cursor clipping AHK script
+; For AutoHotkey 1.1
+; quickly cleaned up for Indrek
+; May require manual adjustments
 
+; BUG: this does not react at all when the window's size changes
+
+GroupAdd diablo, ahk_exe Game.exe
+GroupAdd diablo, ahk_exe D2SE.exe
+GroupAdd diablo, Diablo II
+GroupAdd diablo, ahk_exe notepad++.exe
+; add something that matches D2R here #######################################
+; "ahk_exe Game.exe" will match any program named Game.exe
+; "Diablo II" will match any window whose title is Diablo II
+
+; die if this script isn't in admin mode
+; (if D2R doesn't require admin, this part can be removed safely ######################)
 if !A_IsAdmin
 {
 	MsgBox, This script should be run in administrator mode
 	ExitApp
 }
 
+; ---------------------------------------------------
+
 #NoEnv
 #SingleInstance force
-;#ClipboardTimeout -1
-SendMode Input
-SetWorkingDir %A_ScriptDir%
-for __, Category in ["Pixel", "Mouse"]
-	CoordMode, %Category%, Client
-
-SetKeyDelay 0
-SetMouseDelay 0
-SetDefaultMouseSpeed, 0
 SetTitleMatchMode 2
 
-
-
-;---------------------------------Auto-suspend----------------------------------
-
-Suspend on
-GroupAdd diablo, ahk_exe Game.exe
-GroupAdd diablo, ahk_exe D2SE.exe
-GroupAdd diablo, Diablo II
-WinNotActive()
-
-WinActive()
+; start looking for the window
+Loop
 {
-	Suspend Off
-	;Clip mouse to the game window
-	WinGetPos, VarX, VarY, Width, Height, A
-	VarX2 := VarX + Width
-	VarY2 := VarY + Height
-	ClipCursor( True, VarX+8, VarY+31, VarX2-8, VarY2-8)
-	WinWaitNotActive ahk_group diablo
-	{
-		WinNotActive()
-	}
-}
-WinNotActive()
-{
-	ClipCursor( False,0,0,0,0)
-	Suspend on
 	WinWaitActive ahk_group diablo
-	{
-		WinActive()
-	}
+	ToolTip Active
+	
+	; there's no function or coordmode in 1.1 that will give us the client coordinates of the game,
+	; so let's do it ourselves
+	; copied from: https://www.autohotkey.com/boards/viewtopic.php?t=60924
+	VarSetCapacity(RECT, 16, 0)
+	DllCall("user32\GetClientRect" , "Ptr", WinExist(), "Ptr", &RECT)
+	DllCall("user32\ClientToScreen", "Ptr", WinExist(), "Ptr", &RECT)
+	x := NumGet(&RECT,  0, "Int")
+	y := NumGet(&RECT,  4, "Int")
+	w := NumGet(&RECT,  8, "Int")
+	h := NumGet(&RECT, 12, "Int")
+	ClipCursor(1, x, y, x+w, y+h)
+	
+	WinWaitNotActive ahk_group diablo
+	ToolTip Inactive
+	ClipCursor(0, 0, 0, 0, 0)
 }
-
-;---------------------------------The cool shit---------------------------------
-
-;unclip mouse
-f2::ClipCursor( False,0,0,0,0)
-
-;reload script
-^!r::Reload
-
-;remap middle click to right click
-; MButton::RButton
-
-;use a town portal
-!q::
-LButtonDown := GetKeyState("LButton")
-MouseGetPos, mousx, mousy
-Send, {Space}
-Click, right, 432, 330
-Send, {Space}
-MouseMove, mousx, mousy
-if LButtonDown
-	Click, left, down
-return
 
 ;ClipCursor function via https://autohotkey.com/board/topic/61753-confining-mouse-to-a-window/
 ClipCursor( Confine=True, x1=0 , y1=0, x2=1, y2=1 ) {
